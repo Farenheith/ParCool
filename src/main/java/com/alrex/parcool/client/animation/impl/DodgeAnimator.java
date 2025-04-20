@@ -7,7 +7,7 @@ import com.alrex.parcool.common.action.Parkourability;
 import com.alrex.parcool.common.action.impl.Dodge;
 import com.alrex.parcool.config.ParCoolConfig;
 import com.alrex.parcool.utilities.Easing;
-import com.alrex.parcool.utilities.EntityUtil;
+import com.alrex.parcool.utilities.EntityUtil.RelativeDirection;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
@@ -20,9 +20,9 @@ public class DodgeAnimator extends Animator {
 		return getTick() >= Dodge.MAX_TICK;
 	}
 
-	final EntityUtil.Direction direction;
+	final RelativeDirection direction;
 
-	public DodgeAnimator(EntityUtil.Direction dodgeDirection) {
+	public DodgeAnimator(RelativeDirection dodgeDirection) {
 		direction = dodgeDirection;
 	}
 
@@ -270,7 +270,7 @@ public class DodgeAnimator extends Animator {
 						.linear(0.3f, 0.5f, 1, 1)
 						.sinInOut(0.5f, 1, 1, 0)
 						.get();
-				if (direction == EntityUtil.Direction.Left) {
+				if (direction == RelativeDirection.Left) {
 					rotator.startBasedCenter()
 							.translateY(-yTranslateFactor * player.getBbHeight() / 3f)
 							.rotateYawRightward(25 * yawFactor - 4)
@@ -320,7 +320,7 @@ public class DodgeAnimator extends Animator {
 				float rollFactor = new Easing(phase)
 						.squareOut(0, 1, 0, 1)
 						.get();
-				if (direction == EntityUtil.Direction.Right)
+				if (direction == RelativeDirection.Right)
 					event.setRoll(event.getRoll() + 360 * rollFactor);
 				else
 					event.setRoll(event.getRoll() - 360 * rollFactor);

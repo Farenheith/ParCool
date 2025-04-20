@@ -1,5 +1,10 @@
 package com.alrex.parcool.common.action;
 
+import com.alrex.parcool.common.action.impl.ClingToCliff;
+import com.alrex.parcool.common.action.impl.Crawl;
+import com.alrex.parcool.common.action.impl.Dive;
+import com.alrex.parcool.common.action.impl.Roll;
+import com.alrex.parcool.common.action.impl.Tap;
 import com.alrex.parcool.common.info.ActionInfo;
 import com.alrex.parcool.common.info.ClientSetting;
 import net.minecraft.world.entity.player.Player;
@@ -98,5 +103,16 @@ public class Parkourability {
 	public void CopyFrom(Parkourability original) {
         getActionInfo().setClientSetting(original.getActionInfo().getClientSetting());
         getActionInfo().setServerLimitation(original.getActionInfo().getServerLimitation());
+	}
+
+	@SafeVarargs
+	public final Boolean isDoingAny(Class<? extends Action>... actions) {
+		for (Class<? extends Action> action : actions) {
+			if (get(action).isDoing()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

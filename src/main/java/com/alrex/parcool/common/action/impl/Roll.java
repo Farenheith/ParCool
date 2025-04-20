@@ -8,6 +8,7 @@ import com.alrex.parcool.common.action.Parkourability;
 import com.alrex.parcool.common.action.StaminaConsumeTiming;
 import com.alrex.parcool.config.ParCoolConfig;
 import com.alrex.parcool.utilities.EntityUtil;
+import com.alrex.parcool.utilities.EntityUtil.RelativeDirection;
 import com.alrex.parcool.utilities.VectorUtil;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -53,13 +54,13 @@ public class Roll extends Action {
 	@Override
 	public boolean canStart(Player player, Parkourability parkourability, ByteBuffer startInfo) {
 		LocalPlayer clientPlayer = (LocalPlayer) player;
-		EntityUtil.Direction rollDirection = EntityUtil.Direction.Front;
+		RelativeDirection rollDirection = RelativeDirection.Front;
 		if (clientPlayer.input.leftImpulse < -0.5) {
-			rollDirection = EntityUtil.Direction.Right;
+			rollDirection = RelativeDirection.Right;
 		} else if (clientPlayer.input.leftImpulse > 0.5) {
-			rollDirection = EntityUtil.Direction.Left;
+			rollDirection = RelativeDirection.Left;
 		} else if (clientPlayer.input.forwardImpulse < -0.5) {
-			rollDirection = EntityUtil.Direction.Back;
+			rollDirection = RelativeDirection.Back;
 		}
 		startInfo.putInt(rollDirection.ordinal());
 
@@ -74,7 +75,7 @@ public class Roll extends Action {
 	@Override
 	public void onStartInOtherClient(Player player, Parkourability parkourability, ByteBuffer startData) {
 		startRequired = false;
-		EntityUtil.Direction direction = EntityUtil.Direction.values()[startData.getInt()];
+		RelativeDirection direction = RelativeDirection.values()[startData.getInt()];
 		Animation animation = Animation.get(player);
 		if (animation != null) animation.setAnimator(new RollAnimator(direction));
 	}
@@ -82,7 +83,7 @@ public class Roll extends Action {
 	@Override
 	public void onStartInLocalClient(Player player, Parkourability parkourability, ByteBuffer startData) {
 		startRequired = false;
-		EntityUtil.Direction direction = EntityUtil.Direction.values()[startData.getInt()];
+		RelativeDirection direction = RelativeDirection.values()[startData.getInt()];
 		double modifier = Math.sqrt(player.getBbWidth());
 		Vec3 vec = VectorUtil.fromYawDegree(player.yBodyRot).scale(modifier);
 		switch (direction) {
