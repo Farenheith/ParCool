@@ -7,6 +7,7 @@ import com.alrex.parcool.common.action.Parkourability;
 import com.alrex.parcool.common.action.impl.Roll;
 import com.alrex.parcool.config.ParCoolConfig;
 import com.alrex.parcool.utilities.Easing;
+import com.alrex.parcool.utilities.EntityUtil;
 import com.alrex.parcool.utilities.MathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
@@ -14,9 +15,9 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 
 public class RollAnimator extends Animator {
-	private final Roll.Direction direction;
+	private final EntityUtil.Direction direction;
 
-	public RollAnimator(Roll.Direction direction) {
+	public RollAnimator(EntityUtil.Direction direction) {
 		this.direction = direction;
 	}
 
@@ -82,7 +83,7 @@ public class RollAnimator extends Animator {
 				.linear(0.25f, 0.75f, 1, 1)
 				.squareIn(0.75f, 1, 1, 0)
 				.get();
-		if (direction == Roll.Direction.Left) {
+		if (direction == EntityUtil.Direction.Left) {
 			float rightArmXFactor = new Easing(phase)
 					.sinInOut(0, 0.40f, 0, 1)
 					.linear(0.40f, 0.7f, 1, 1)
@@ -216,9 +217,9 @@ public class RollAnimator extends Animator {
 		float phase = (getTick() + rotator.getPartialTick()) / roll.getRollMaxTick();
         if (phase > 1) return;
 		float factor = calculateMovementFactor(phase);
-		float sign = direction == Roll.Direction.Front ? 1 : -1;
+		float sign = direction == EntityUtil.Direction.Front ? 1 : -1;
         float translateYFactor;
-        if (direction == Roll.Direction.Front) {
+        if (direction == EntityUtil.Direction.Front) {
             translateYFactor = new Easing(phase)
                     .squareOut(0, 0.5f, 0, 1)
                     .sinInOut(0.5f, 1, 1, 0)
@@ -263,7 +264,7 @@ public class RollAnimator extends Animator {
 						.linear(0.45f, 0.55f, 1, 1)
 						.sinInOut(0.55f, 1, 1, 0)
 						.get();
-				if (direction == Roll.Direction.Left) {
+				if (direction == EntityUtil.Direction.Left) {
 					rotator.startBasedCenter()
 							.translateY(-yTranslateFactor * player.getBbHeight() / 3.5f)
 							.rotateYawRightward(25 * yawFactor - 13)
@@ -301,7 +302,7 @@ public class RollAnimator extends Animator {
 
 	void onCameraSetUpFrontBack(ViewportEvent.ComputeCameraAngles event, Player clientPlayer, Parkourability parkourability) {
 		Roll roll = parkourability.get(Roll.class);
-		float sign = direction == Roll.Direction.Front ? 1 : -1;
+		float sign = direction == EntityUtil.Direction.Front ? 1 : -1;
 		if (roll.isDoing() &&
 				clientPlayer.isLocalPlayer() &&
 				Minecraft.getInstance().options.getCameraType().isFirstPerson() &&
@@ -325,7 +326,7 @@ public class RollAnimator extends Animator {
 			float rollFactor = new Easing(phase)
 					.squareOut(0, 1, 0, 1)
 					.get();
-			if (direction == Roll.Direction.Right)
+			if (direction == EntityUtil.Direction.Right)
 				event.setRoll(event.getRoll() + 360 * rollFactor);
 			else
 				event.setRoll(event.getRoll() - 360 * rollFactor);

@@ -6,6 +6,8 @@ import com.alrex.parcool.client.animation.PlayerModelTransformer;
 import com.alrex.parcool.common.action.Parkourability;
 import com.alrex.parcool.common.action.impl.Dodge;
 import com.alrex.parcool.utilities.Easing;
+import com.alrex.parcool.utilities.EntityUtil;
+
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 
@@ -17,9 +19,9 @@ public class ExaggeratedSideDodgeAnimator extends Animator {
 		return getTick() >= Dodge_Max_Tick;
 	}
 
-	final Dodge.DodgeDirection direction;
+	final EntityUtil.Direction direction;
 
-	public ExaggeratedSideDodgeAnimator(Dodge.DodgeDirection dodgeDirection) {
+	public ExaggeratedSideDodgeAnimator(EntityUtil.Direction dodgeDirection) {
 		direction = dodgeDirection;
 	}
 

@@ -21,8 +21,6 @@ public class Roll extends Action {
 	private int creativeCoolTime = 0;
 	private boolean startRequired = false;
 
-	public enum Direction {Front, Back, Left, Right}
-
 	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onClientTick(Player player, Parkourability parkourability) {
@@ -55,13 +53,13 @@ public class Roll extends Action {
 	@Override
 	public boolean canStart(Player player, Parkourability parkourability, ByteBuffer startInfo) {
 		LocalPlayer clientPlayer = (LocalPlayer) player;
-		Direction rollDirection = Direction.Front;
+		EntityUtil.Direction rollDirection = EntityUtil.Direction.Front;
 		if (clientPlayer.input.leftImpulse < -0.5) {
-			rollDirection = Direction.Right;
+			rollDirection = EntityUtil.Direction.Right;
 		} else if (clientPlayer.input.leftImpulse > 0.5) {
-			rollDirection = Direction.Left;
+			rollDirection = EntityUtil.Direction.Left;
 		} else if (clientPlayer.input.forwardImpulse < -0.5) {
-			rollDirection = Direction.Back;
+			rollDirection = EntityUtil.Direction.Back;
 		}
 		startInfo.putInt(rollDirection.ordinal());
 
@@ -76,7 +74,7 @@ public class Roll extends Action {
 	@Override
 	public void onStartInOtherClient(Player player, Parkourability parkourability, ByteBuffer startData) {
 		startRequired = false;
-		Direction direction = Direction.values()[startData.getInt()];
+		EntityUtil.Direction direction = EntityUtil.Direction.values()[startData.getInt()];
 		Animation animation = Animation.get(player);
 		if (animation != null) animation.setAnimator(new RollAnimator(direction));
 	}
@@ -84,7 +82,7 @@ public class Roll extends Action {
 	@Override
 	public void onStartInLocalClient(Player player, Parkourability parkourability, ByteBuffer startData) {
 		startRequired = false;
-		Direction direction = Direction.values()[startData.getInt()];
+		EntityUtil.Direction direction = EntityUtil.Direction.values()[startData.getInt()];
 		double modifier = Math.sqrt(player.getBbWidth());
 		Vec3 vec = VectorUtil.fromYawDegree(player.yBodyRot).scale(modifier);
 		switch (direction) {

@@ -3,13 +3,13 @@ package com.alrex.parcool.common.action.impl;
 import com.alrex.parcool.api.SoundEvents;
 import com.alrex.parcool.client.animation.Animation;
 import com.alrex.parcool.client.animation.impl.DodgeAnimator;
-import com.alrex.parcool.client.input.KeyBindings;
 import com.alrex.parcool.client.input.KeyRecorder;
 import com.alrex.parcool.common.action.Action;
 import com.alrex.parcool.common.action.Parkourability;
 import com.alrex.parcool.common.action.StaminaConsumeTiming;
 import com.alrex.parcool.common.info.ActionInfo;
 import com.alrex.parcool.config.ParCoolConfig;
+import com.alrex.parcool.utilities.EntityUtil;
 import com.alrex.parcool.utilities.VectorUtil;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -43,11 +43,7 @@ public class Dodge extends Action {
 		);
 	}
 
-	public enum DodgeDirection {
-		Front, Back, Left, Right
-	}
-
-	private DodgeDirection dodgeDirection = null;
+	private EntityUtil.Direction dodgeDirection = null;
 	private int coolTime = 0;
 	private int successivelyCount = 0;
 	private int successivelyCoolTick = 0;
@@ -79,17 +75,14 @@ public class Dodge extends Action {
 	@Override
     public boolean canStart(Player player, Parkourability parkourability, ByteBuffer startInfo) {
 		boolean enabledDoubleTap = ParCoolConfig.Client.Booleans.EnableDoubleTappingForDodge.get();
-		DodgeDirection direction = null;
+		EntityUtil.Direction direction = null;
 		if (enabledDoubleTap) {
-			if (KeyRecorder.keyBack.isDoubleTapped()) direction = DodgeDirection.Back;
-			if (KeyRecorder.keyLeft.isDoubleTapped()) direction = DodgeDirection.Left;
-			if (KeyRecorder.keyRight.isDoubleTapped()) direction = DodgeDirection.Right;
+			if (KeyRecorder.keyBack.isDoubleTapped()) direction = EntityUtil.Direction.Back;
+			if (KeyRecorder.keyLeft.isDoubleTapped()) direction = EntityUtil.Direction.Left;
+			if (KeyRecorder.keyRight.isDoubleTapped()) direction = EntityUtil.Direction.Right;
 		}
 		if (direction == null && KeyRecorder.keyDodge.isPressed()) {
-			if (KeyBindings.getKeyBack().isDown()) direction = DodgeDirection.Back;
-			if (KeyBindings.getKeyForward().isDown()) direction = DodgeDirection.Front;
-			if (KeyBindings.getKeyLeft().isDown()) direction = DodgeDirection.Left;
-			if (KeyBindings.getKeyRight().isDown()) direction = DodgeDirection.Right;
+			direction = EntityUtil.getDirection(player);
 		}
 		if (direction == null) return false;
 		startInfo.putInt(direction.ordinal());
@@ -120,7 +113,7 @@ public class Dodge extends Action {
 	@OnlyIn(Dist.CLIENT)
 	@Override
     public void onStartInLocalClient(Player player, Parkourability parkourability, ByteBuffer startData) {
-		dodgeDirection = DodgeDirection.values()[startData.getInt()];
+		dodgeDirection = EntityUtil.Direction.values()[startData.getInt()];
 		coolTime = getMaxCoolTime(parkourability.getActionInfo());
 		if (successivelyCount < getMaxSuccessiveDodge(parkourability.getActionInfo())) {
 			successivelyCount++;
@@ -151,7 +144,7 @@ public class Dodge extends Action {
 	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onStartInOtherClient(Player player, Parkourability parkourability, ByteBuffer startData) {
-		dodgeDirection = DodgeDirection.values()[startData.getInt()];
+		dodgeDirection = EntityUtil.Direction.values()[startData.getInt()];
 		if (ParCoolConfig.Client.Booleans.EnableActionSounds.get())
 			player.playSound(SoundEvents.DODGE.get(), 1f, 1f);
 		Animation animation = Animation.get(player);
