@@ -8,6 +8,8 @@ import com.alrex.parcool.common.action.Action;
 import com.alrex.parcool.common.action.Parkourability;
 import com.alrex.parcool.common.action.StaminaConsumeTiming;
 import com.alrex.parcool.config.ParCoolConfig;
+import com.alrex.parcool.utilities.EntityUtil;
+import com.alrex.parcool.utilities.EntityUtil.RelativeDirection;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -19,27 +21,20 @@ public class Flipping extends Action {
         PressRightAndLeft, TapMovementAndJump, PressFlippingKey;
 
         @OnlyIn(Dist.CLIENT)
-        public boolean isInputDone(boolean justJumped) {
+        public boolean isInputDone(boolean justJumped, Player player) {
 			switch (this) {
                 case PressRightAndLeft:
-                    return KeyBindings.getKeyRight().isDown()
-                            && KeyRecorder.keyRight.getTickKeyDown() < 3
-                            && KeyBindings.getKeyLeft().isDown()
-                            && KeyRecorder.keyLeft.getTickKeyDown() < 3;
+                    return KeyBindings.isLeftAndRightDown();
                 case PressFlippingKey:
                     return KeyRecorder.keyFlipping.isPressed();
                 case TapMovementAndJump:
+                    RelativeDirection direction = EntityUtil.getRelativeDirection(player);
                     return justJumped && (
-                            (KeyBindings.getKeyForward().isDown() && KeyRecorder.keyForward.getTickKeyDown() < 4)
-                                    || (KeyBindings.getKeyBack().isDown() && KeyRecorder.keyBack.getTickKeyDown() < 4)
+                            direction == RelativeDirection.Front || direction == RelativeDirection.Back
                     );
             }
             return false;
         }
-    }
-
-    public enum Direction {
-        Front, Back
     }
 
     private boolean justJumped = false;
@@ -49,23 +44,17 @@ public class Flipping extends Action {
     }
 	@Override
     public boolean canStart(Player player, Parkourability parkourability, ByteBuffer startInfo) {
-        Direction fDirection;
-		if (KeyBindings.getKeyBack().isDown()) {
-            fDirection = Direction.Back;
-		} else {
-            fDirection = Direction.Front;
-		}
+        RelativeDirection fDirection = EntityUtil.getRelativeDirection(player);
+        if (fDirection == null) fDirection = RelativeDirection.Front;
         ControlType control = ParCoolConfig.Client.FlipControl.get();
         startInfo
                 .putInt(control.ordinal())
                 .putInt(fDirection.ordinal());
-        boolean input = control.isInputDone(justJumped);
+        boolean input = control.isInputDone(justJumped, player);
         justJumped = false;
         return (input
                 && !player.isShiftKeyDown()
-				&& !parkourability.get(Crawl.class).isDoing()
-				&& !parkourability.get(Dive.class).isDoing()
-				&& !parkourability.get(ChargeJump.class).isDoing()
+				&& !parkourability.isDoingAny(Crawl.class, Dive.class, ChargeJump.class)
 				&& !parkourability.getCancelMarks().cancelJump()
 				&& parkourability.getAdditionalProperties().getNotLandingTick() <= 1
 		);
@@ -83,7 +72,7 @@ public class Flipping extends Action {
 		Animation animation = Animation.get(player);
 		if (animation != null) {
 			animation.setAnimator(new FlippingAnimator(
-                    Direction.values()[startData.getInt()]
+                    RelativeDirection.values()[startData.getInt()]
 			));
 		}
 	}
@@ -94,7 +83,7 @@ public class Flipping extends Action {
 		Animation animation = Animation.get(player);
 		if (animation != null) {
 			animation.setAnimator(new FlippingAnimator(
-                    Direction.values()[startData.getInt()]
+                RelativeDirection.values()[startData.getInt()]
 			));
 		}
 	}

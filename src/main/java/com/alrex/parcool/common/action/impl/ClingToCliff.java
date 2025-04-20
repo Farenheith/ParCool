@@ -8,8 +8,10 @@ import com.alrex.parcool.common.action.Action;
 import com.alrex.parcool.common.action.Parkourability;
 import com.alrex.parcool.common.action.StaminaConsumeTiming;
 import com.alrex.parcool.config.ParCoolConfig;
+import com.alrex.parcool.utilities.EntityUtil;
 import com.alrex.parcool.utilities.VectorUtil;
 import com.alrex.parcool.utilities.WorldUtil;
+import com.alrex.parcool.utilities.EntityUtil.RelativeDirection;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -101,17 +103,15 @@ public class ClingToCliff extends Action {
 	@Override
 	public void onWorkingTickInLocalClient(Player player, Parkourability parkourability) {
         armSwingAmount += (float) player.getDeltaMovement().multiply(1, 0, 1).lengthSqr();
-		if (KeyBindings.getKeyLeft().isDown() && KeyBindings.getKeyRight().isDown()) {
+		if (KeyBindings.isLeftAndRightDown()) {
 			player.setDeltaMovement(0, 0, 0);
+		} else if (clingWallDirection != null && facingDirection == FacingDirection.ToWall) {
+			Vec3 vec = clingWallDirection.yRot((float) (Math.PI / 2)).normalize().scale(0.1);
+				if (KeyBindings.isKeyLeftDown()) player.setDeltaMovement(vec);
+				else if (KeyBindings.isKeyRightDown()) player.setDeltaMovement(vec.reverse());
+			else player.setDeltaMovement(0, 0, 0);
 		} else {
-			if (clingWallDirection != null && facingDirection == FacingDirection.ToWall) {
-				Vec3 vec = clingWallDirection.yRot((float) (Math.PI / 2)).normalize().scale(0.1);
-				if (KeyBindings.getKeyLeft().isDown()) player.setDeltaMovement(vec);
-				else if (KeyBindings.getKeyRight().isDown()) player.setDeltaMovement(vec.reverse());
-				else player.setDeltaMovement(0, 0, 0);
-			} else {
-				player.setDeltaMovement(0, 0, 0);
-			}
+			player.setDeltaMovement(0, 0, 0);
 		}
 	}
 

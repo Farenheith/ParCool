@@ -14,6 +14,7 @@ import org.lwjgl.glfw.GLFW;
 
 @OnlyIn(Dist.CLIENT)
 public class KeyBindings {
+	private static final Minecraft mc = Minecraft.getInstance();
 	private static final Options settings = Minecraft.getInstance().options;
     private static final KeyMapping keyBindEnable = new KeyMapping("key.parcool.Enable", KeyConflictContext.UNIVERSAL, KeyModifier.CONTROL, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P, "key.categories.parcool");
 	private static final KeyMapping keyBindCrawl = new KeyMapping("key.parcool.Crawl", GLFW.GLFW_KEY_C, "key.categories.parcool");
@@ -42,20 +43,24 @@ public class KeyBindings {
 		return settings.keyShift;
 	}
 
-	public static KeyMapping getKeyLeft() {
-		return settings.keyLeft;
+	public static Boolean isLeftAndRightDown() {
+		return isKeyLeftDown() && isKeyRightDown();
 	}
 
-	public static KeyMapping getKeyRight() {
-		return settings.keyRight;
+	public static Boolean isKeyLeftDown() {
+		return mc.player.input.left;
 	}
 
-	public static KeyMapping getKeyForward() {
-		return settings.keyUp;
+	public static Boolean isKeyRightDown() {
+		return mc.player.input.right;
 	}
 
-	public static KeyMapping getKeyBack() {
-		return settings.keyDown;
+	public static Boolean isKeyForwardDown() {
+		return mc.player.input.forwardImpulse > 0;
+	}
+
+	public static Boolean isKeyBackDown() {
+		return mc.player.input.forwardImpulse < 0;
 	}
 
     public static KeyMapping getKeyBindEnable() {

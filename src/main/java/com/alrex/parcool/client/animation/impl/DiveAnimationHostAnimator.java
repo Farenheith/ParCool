@@ -9,6 +9,8 @@ import com.alrex.parcool.common.action.impl.Dive;
 import com.alrex.parcool.common.action.impl.SkyDive;
 import com.alrex.parcool.utilities.Easing;
 import com.alrex.parcool.utilities.EasingFunctions;
+import com.alrex.parcool.utilities.EntityUtil;
+import com.alrex.parcool.utilities.EntityUtil.RelativeDirection;
 import com.alrex.parcool.utilities.MathUtil;
 import net.minecraft.world.entity.player.Player;
 
@@ -168,27 +170,27 @@ public class DiveAnimationHostAnimator extends Animator {
             super.tick(player);
             forwardAngleCountOld = forwardAngleCount;
             rightAngleCountOld = rightAngleCount;
-			if (KeyBindings.getKeyForward().isDown()) {
-				if (KeyBindings.getKeyBack().isDown()) {
+			if (KeyBindings.isKeyForwardDown()) {
+				if (KeyBindings.isKeyBackDown()) {
 					if (forwardAngleCount > 0) forwardAngleCount--;
 					if (forwardAngleCount < 0) forwardAngleCount++;
 				} else {
-					if (forwardAngleCount < maxCount) forwardAngleCount++;
+				if (forwardAngleCount < maxCount) forwardAngleCount++;
 				}
-			} else if (KeyBindings.getKeyBack().isDown()) {
+			} else if (KeyBindings.isKeyBackDown()) {
 				if (forwardAngleCount > -maxCount) forwardAngleCount--;
 			} else {
 				if (forwardAngleCount > 0) forwardAngleCount--;
 				if (forwardAngleCount < 0) forwardAngleCount++;
 			}
-			if (KeyBindings.getKeyRight().isDown()) {
-				if (KeyBindings.getKeyLeft().isDown()) {
+			if (KeyBindings.isKeyRightDown()) {
+				if (KeyBindings.isKeyLeftDown()) {
 					if (rightAngleCount > 0) rightAngleCount--;
 					if (rightAngleCount < 0) rightAngleCount++;
 				} else {
-					if (rightAngleCount < maxCount) rightAngleCount++;
+				if (rightAngleCount < maxCount) rightAngleCount++;
 				}
-			} else if (KeyBindings.getKeyLeft().isDown()) {
+			} else if (KeyBindings.isKeyLeftDown()) {
 				if (rightAngleCount > -maxCount) rightAngleCount--;
 			} else {
 				if (rightAngleCount > 0) rightAngleCount--;

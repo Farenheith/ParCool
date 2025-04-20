@@ -9,8 +9,11 @@ import com.alrex.parcool.common.action.Parkourability;
 import com.alrex.parcool.common.action.StaminaConsumeTiming;
 import com.alrex.parcool.common.attachment.Attachments;
 import com.alrex.parcool.config.ParCoolConfig;
+import com.alrex.parcool.utilities.EntityUtil;
 import com.alrex.parcool.utilities.VectorUtil;
 import com.alrex.parcool.utilities.WorldUtil;
+import com.alrex.parcool.utilities.EntityUtil.RelativeDirection;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -111,14 +114,15 @@ public class HangDown extends Action {
 		Vec3 bodyVec = VectorUtil.fromYawDegree(player.yBodyRot);
 		final double speed = 0.1;
 		double xSpeed = 0, zSpeed = 0;
+		RelativeDirection direction = EntityUtil.getRelativeDirection(player);
 		if (orthogonalToBar) {
 			if (hangingBarAxis == BarAxis.X) {
 				xSpeed = (bodyVec.z > 0 ? 1 : -1) * speed;
 			} else {
 				zSpeed = (bodyVec.x > 0 ? 1 : -1) * speed;
 			}
-			if (KeyBindings.getKeyLeft().isDown()) player.setDeltaMovement(xSpeed, 0, -zSpeed);
-			else if (KeyBindings.getKeyRight().isDown()) player.setDeltaMovement(-xSpeed, 0, zSpeed);
+			if (direction == RelativeDirection.Left) player.setDeltaMovement(xSpeed, 0, -zSpeed);
+			else if (direction == RelativeDirection.Right) player.setDeltaMovement(-xSpeed, 0, zSpeed);
 			else player.setDeltaMovement(0, 0, 0);
 		} else {
 			if (hangingBarAxis == BarAxis.X) {
@@ -126,8 +130,8 @@ public class HangDown extends Action {
 			} else {
 				zSpeed = (bodyVec.z > 0 ? 1 : -1) * speed;
 			}
-			if (KeyBindings.getKeyForward().isDown()) player.setDeltaMovement(xSpeed, 0, zSpeed);
-			else if (KeyBindings.getKeyBack().isDown()) player.setDeltaMovement(-xSpeed, 0, -zSpeed);
+			if (direction == RelativeDirection.Front) player.setDeltaMovement(xSpeed, 0, zSpeed);
+			else if (direction == RelativeDirection.Back) player.setDeltaMovement(-xSpeed, 0, -zSpeed);
 			else player.setDeltaMovement(0, 0, 0);
 		}
         armSwingAmount += (float) player.getDeltaMovement().multiply(1, 0, 1).lengthSqr();

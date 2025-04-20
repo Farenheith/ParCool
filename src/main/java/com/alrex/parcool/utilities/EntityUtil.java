@@ -1,18 +1,22 @@
 package com.alrex.parcool.utilities;
 
+import java.util.HashMap;
+import java.util.UUID;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 public class EntityUtil {
 	private static double movementThreshold = 0.1;
+	private static HashMap<UUID, Tuple<Integer, RelativeDirection>> lastDirections = new HashMap<>();
 	public enum RelativeDirection {Front, Back, Left, Right}
 
 	public static void addVelocity(Entity entity, Vec3 vec) {
 		entity.setDeltaMovement(entity.getDeltaMovement().add(vec));
 	}
-
+	
 	public static boolean isMoving(Entity player) {
 		Vec3 movement = player.getDeltaMovement();
 		return Math.sqrt(Math.pow(movement.x, 2) + Math.pow(movement.z, 2)) > movementThreshold;
@@ -31,6 +35,10 @@ public class EntityUtil {
 			}
 			return null;
 		}
+		var uuid = player.getUUID();
+		var lastDirection = lastDirections.getOrDefault(uuid, null);
+		if (lastDirection != null && lastDirection.getA() == player.tickCount) return lastDirection.getB();
+
 		Vec3 movement = player.getDeltaMovement();
     
 		// Get player's view direction
@@ -65,13 +73,17 @@ public class EntityUtil {
 		// Determine primary direction of movement relative to player orientation
 		double absForward = Math.abs(forwardMovement);
 		double absSideways = Math.abs(sidewaysMovement);
+
+		RelativeDirection result = null;
 		
 		if (absForward > absSideways) {
-			return forwardMovement > 0 ? RelativeDirection.Front : RelativeDirection.Back;
+			result = forwardMovement > 0 ? RelativeDirection.Front : RelativeDirection.Back;
 		} else if (absSideways > absForward) {
-			return sidewaysMovement > 0 ? RelativeDirection.Right : RelativeDirection.Left;
+			result = sidewaysMovement > 0 ? RelativeDirection.Right : RelativeDirection.Left;
 		}
+
+		lastDirections.put(uuid, new Tuple<>(player.tickCount, result));
 		
-		return null;
+		return result;
 	}
 }
