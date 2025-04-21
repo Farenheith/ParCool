@@ -8,8 +8,10 @@ import com.alrex.parcool.client.input.KeyRecorder;
 import com.alrex.parcool.common.action.Action;
 import com.alrex.parcool.common.action.Parkourability;
 import com.alrex.parcool.common.action.StaminaConsumeTiming;
+import com.alrex.parcool.common.compat.shoulderSurfing.ShoulderSurfingCompat;
 import com.alrex.parcool.common.info.ActionInfo;
 import com.alrex.parcool.config.ParCoolConfig;
+import com.alrex.parcool.utilities.EntityUtil;
 import com.alrex.parcool.utilities.VectorUtil;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -130,13 +132,18 @@ public class Dodge extends Action {
 		successivelyCoolTick = getSuccessiveCoolTime(parkourability.getActionInfo());
 
 		if (!player.onGround()) return;
-		Vec3 lookVec = VectorUtil.fromYawDegree(player.getYHeadRot());
-		Vec3 dodgeVec = switch (dodgeDirection) {
-			case Front -> lookVec;
-			case Back -> lookVec.reverse();
-			case Right -> lookVec.yRot((float) Math.PI / -2);
-			case Left -> lookVec.yRot((float) Math.PI / 2);
-		};
+		Vec3 dodgeVec;
+		if (ShoulderSurfingCompat.isCameraDecoupled()) {
+			dodgeVec = EntityUtil.GetCameraLookAngle();
+		} else {
+			dodgeVec = VectorUtil.fromYawDegree(player.getYHeadRot());
+			dodgeVec = switch (dodgeDirection) {
+				case Front -> dodgeVec;
+				case Back -> dodgeVec.reverse();
+				case Right -> dodgeVec.yRot((float) Math.PI / -2);
+				case Left -> dodgeVec.yRot((float) Math.PI / 2);
+			};
+		}
 		dodgeVec = dodgeVec.scale(.9 * getSpeedModifier(parkourability.getActionInfo()));
 		player.setDeltaMovement(dodgeVec);
 
