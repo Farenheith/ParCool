@@ -1,19 +1,9 @@
 package com.alrex.parcool.common.compat.shoulderSurfing;
 
-import com.alrex.parcool.common.action.impl.Dodge;
 import com.alrex.parcool.common.action.impl.Dodge.DodgeDirection;
-import com.alrex.parcool.utilities.MathUtil;
-import com.alrex.parcool.utilities.VectorUtil;
-import com.github.exopandora.shouldersurfing.api.client.IShoulderSurfingCamera;
-import com.github.exopandora.shouldersurfing.api.client.ShoulderSurfing;
 import com.github.exopandora.shouldersurfing.config.Config;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.level.NoteBlockEvent.Play;
-
 import java.lang.reflect.Field;
 
 /**
@@ -61,15 +51,21 @@ public class ShoulderSurfingCompat {
  
      public static DodgeDirection handleCustomCameraRotationForDodge(DodgeDirection direction) {
         if (!isLoaded || IsCameraInFirstPerson()) return direction;
-        if (Config.CLIENT.isCameraDecoupled()) return DodgeDirection.Front;
-        var player = Minecraft.getInstance().player;
+        var player = mc.player;
         if (player == null) return direction;
-        IShoulderSurfingCamera camera = ShoulderSurfing.getInstance().getCamera();
-        float yaw = MathUtil.normalizeDegree(camera.getYRot() - player.getYRot());
-        float yawAbs = Math.abs(yaw);
-        if (yawAbs < 45) return direction;
-        if (yawAbs > 135) return direction.inverse();
-        if (yaw < 0) return direction.left();
+        var camera = mc.cameraEntity;
+        float yaw = camera.getYRot() - player.getYRot();
+        if (yaw < 0) yaw += 360;
+        
+        if (Config.CLIENT.isCameraDecoupled()) {
+            if (yaw <= 45 || yaw >= 270) return DodgeDirection.Front;
+            if (yaw >= 135 && yaw <= 225) return DodgeDirection.Back;
+            if (yaw > 180) return DodgeDirection.Left;
+            return DodgeDirection.Right;
+        }
+        if (yaw < 45) return direction;
+        if (yaw > 135) return direction.inverse();
+        if (yaw > 225) return direction.left();
         return direction.right();
      }
 

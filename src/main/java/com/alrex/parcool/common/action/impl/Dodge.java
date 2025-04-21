@@ -13,7 +13,6 @@ import com.alrex.parcool.common.info.ActionInfo;
 import com.alrex.parcool.config.ParCoolConfig;
 import com.alrex.parcool.utilities.EntityUtil;
 import com.alrex.parcool.utilities.VectorUtil;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -126,19 +125,27 @@ public class Dodge extends Action {
 		boolean enabledDoubleTap = ParCoolConfig.Client.Booleans.EnableDoubleTappingForDodge.get();
 		DodgeDirection direction = null;
 		if (enabledDoubleTap) {
+			if (ShoulderSurfingCompat.isCameraDecoupled() && KeyRecorder.keyForward.isDoubleTapped()) direction = DodgeDirection.Front;
 			if (KeyRecorder.keyBack.isDoubleTapped()) direction = DodgeDirection.Back;
 			if (KeyRecorder.keyLeft.isDoubleTapped()) direction = DodgeDirection.Left;
 			if (KeyRecorder.keyRight.isDoubleTapped()) direction = DodgeDirection.Right;
 		}
+		var decoupledCameraTrigger = false;
 		if (direction == null && KeyRecorder.keyDodge.isPressed()) {
-			if (KeyBindings.isKeyForwardDown() || ShoulderSurfingCompat.isCameraDecoupled()) direction = DodgeDirection.Front;
+			if (ShoulderSurfingCompat.isCameraDecoupled()) {
+				direction = DodgeDirection.Back;
+				decoupledCameraTrigger = true;
+			} else if (KeyBindings.isKeyForwardDown()) direction = DodgeDirection.Front;
 			else if (KeyBindings.isKeyBackDown()) direction = DodgeDirection.Back;
 			else if (KeyBindings.isKeyLeftDown()) direction = DodgeDirection.Left;
 			else if (KeyBindings.isKeyRightDown()) direction = DodgeDirection.Right;
 		}
 		if (direction == null) return false;
-		direction = ShoulderSurfingCompat.handleCustomCameraRotationForDodge(direction);
+		if (!decoupledCameraTrigger) {
+			direction = ShoulderSurfingCompat.handleCustomCameraRotationForDodge(direction);
+		}
 		startInfo.putInt(direction.ordinal());
+		startInfo.putInt(decoupledCameraTrigger ? 1 : 0);
 		return (parkourability.getAdditionalProperties().getLandingTick() > 5
 				&& !isInSuccessiveCoolDown(parkourability.getActionInfo())
 				&& coolTime <= 0
@@ -167,6 +174,7 @@ public class Dodge extends Action {
 	@Override
     public void onStartInLocalClient(Player player, Parkourability parkourability, ByteBuffer startData) {;
 		dodgeDirection = DodgeDirection.values()[startData.getInt()];
+		var decoupledCameraTrigger = startData.getInt() == 1;
 		coolTime = getMaxCoolTime(parkourability.getActionInfo());
 		if (successivelyCount < getMaxSuccessiveDodge(parkourability.getActionInfo())) {
 			successivelyCount++;
@@ -177,7 +185,7 @@ public class Dodge extends Action {
 
 		if (!player.onGround()) return;
 		Vec3 dodgeVec;
-		if (ShoulderSurfingCompat.isCameraDecoupled()) {
+		if (!decoupledCameraTrigger && ShoulderSurfingCompat.isCameraDecoupled()) {
 			dodgeVec = EntityUtil.GetCameraLookAngle();
 		} else {
 			dodgeVec = VectorUtil.fromYawDegree(player.getYHeadRot());
