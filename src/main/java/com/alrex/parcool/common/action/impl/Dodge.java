@@ -8,7 +8,7 @@ import com.alrex.parcool.client.input.KeyRecorder;
 import com.alrex.parcool.common.action.Action;
 import com.alrex.parcool.common.action.Parkourability;
 import com.alrex.parcool.common.action.StaminaConsumeTiming;
-import com.alrex.parcool.common.compat.shoulderSurfing.ShouldSurfingCompat;
+import com.alrex.parcool.common.compat.shoulderSurfing.ShoulderSurfingCompat;
 import com.alrex.parcool.common.info.ActionInfo;
 import com.alrex.parcool.config.ParCoolConfig;
 import com.alrex.parcool.utilities.EntityUtil;
@@ -89,10 +89,10 @@ public class Dodge extends Action {
 			if (KeyRecorder.keyRight.isDoubleTapped()) direction = DodgeDirection.Right;
 		}
 		if (direction == null && KeyRecorder.keyDodge.isPressed()) {
-			if (KeyBindings.isKeyBackDown()) direction = DodgeDirection.Back;
-			if (KeyBindings.isKeyForwardDown()) direction = DodgeDirection.Front;
-			if (KeyBindings.isKeyLeftDown()) direction = DodgeDirection.Left;
-			if (KeyBindings.isKeyRightDown()) direction = DodgeDirection.Right;
+			if (KeyBindings.isKeyForwardDown() || ShoulderSurfingCompat.isCameraDecoupled()) direction = DodgeDirection.Front;
+			else if (KeyBindings.isKeyBackDown()) direction = DodgeDirection.Back;
+			else if (KeyBindings.isKeyLeftDown()) direction = DodgeDirection.Left;
+			else if (KeyBindings.isKeyRightDown()) direction = DodgeDirection.Right;
 		}
 		if (direction == null) return false;
 		startInfo.putInt(direction.ordinal());
@@ -122,8 +122,7 @@ public class Dodge extends Action {
 
 	@OnlyIn(Dist.CLIENT)
 	@Override
-    public void onStartInLocalClient(Player player, Parkourability parkourability, ByteBuffer startData) {
-		ShouldSurfingCompat.forceCoupledCamera();
+    public void onStartInLocalClient(Player player, Parkourability parkourability, ByteBuffer startData) {;
 		dodgeDirection = DodgeDirection.values()[startData.getInt()];
 		coolTime = getMaxCoolTime(parkourability.getActionInfo());
 		if (successivelyCount < getMaxSuccessiveDodge(parkourability.getActionInfo())) {
@@ -134,13 +133,18 @@ public class Dodge extends Action {
 		successivelyCoolTick = getSuccessiveCoolTime(parkourability.getActionInfo());
 
 		if (!player.onGround()) return;
-		Vec3 lookVec = VectorUtil.fromYawDegree(player.getYHeadRot());
-		Vec3 dodgeVec = switch (dodgeDirection) {
-			case Front -> lookVec;
-			case Back -> lookVec.reverse();
-			case Right -> lookVec.yRot((float) Math.PI / -2);
-			case Left -> lookVec.yRot((float) Math.PI / 2);
-		};
+		Vec3 dodgeVec;
+		if (ShoulderSurfingCompat.isCameraDecoupled()) {
+			dodgeVec = EntityUtil.GetCameraLookAngle();
+		} else {
+			dodgeVec = VectorUtil.fromYawDegree(player.getYHeadRot());
+			dodgeVec = switch (dodgeDirection) {
+				case Front -> dodgeVec;
+				case Back -> dodgeVec.reverse();
+				case Right -> dodgeVec.yRot((float) Math.PI / -2);
+				case Left -> dodgeVec.yRot((float) Math.PI / 2);
+			};
+		}
 		dodgeVec = dodgeVec.scale(.9 * getSpeedModifier(parkourability.getActionInfo()));
 		player.setDeltaMovement(dodgeVec);
 
@@ -197,11 +201,4 @@ public class Dodge extends Action {
 				(float) getCoolTime() / maxCoolTime,
 				isInSuccessiveCoolDown(info) ? (float) (getSuccessivelyCoolTick()) / (successiveMaxCoolTime) : 0
 		);
-	}
-
-	@OnlyIn(Dist.CLIENT)
-	@Override
-	public void onStopInLocalClient(Player player) {
-		ShouldSurfingCompat.releaseCoupledCamera();
-	}
-}
+	}}
