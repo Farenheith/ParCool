@@ -8,6 +8,7 @@ import com.alrex.parcool.client.input.KeyRecorder;
 import com.alrex.parcool.common.action.Action;
 import com.alrex.parcool.common.action.Parkourability;
 import com.alrex.parcool.common.action.StaminaConsumeTiming;
+import com.alrex.parcool.common.compat.shoulderSurfing.ShouldSurfingCompat;
 import com.alrex.parcool.common.info.ActionInfo;
 import com.alrex.parcool.config.ParCoolConfig;
 import com.alrex.parcool.utilities.EntityUtil;
@@ -122,6 +123,7 @@ public class Dodge extends Action {
 	@OnlyIn(Dist.CLIENT)
 	@Override
     public void onStartInLocalClient(Player player, Parkourability parkourability, ByteBuffer startData) {
+		ShouldSurfingCompat.forceCoupledCamera();
 		dodgeDirection = DodgeDirection.values()[startData.getInt()];
 		coolTime = getMaxCoolTime(parkourability.getActionInfo());
 		if (successivelyCount < getMaxSuccessiveDodge(parkourability.getActionInfo())) {
@@ -195,5 +197,11 @@ public class Dodge extends Action {
 				(float) getCoolTime() / maxCoolTime,
 				isInSuccessiveCoolDown(info) ? (float) (getSuccessivelyCoolTick()) / (successiveMaxCoolTime) : 0
 		);
+	}
+
+	@OnlyIn(Dist.CLIENT)
+	@Override
+	public void onStopInLocalClient(Player player) {
+		ShouldSurfingCompat.releaseCoupledCamera();
 	}
 }
