@@ -15,7 +15,7 @@ import org.lwjgl.glfw.GLFW;
 @OnlyIn(Dist.CLIENT)
 public class KeyBindings {
 	private static final Minecraft mc = Minecraft.getInstance();
-	private static final Options settings = Minecraft.getInstance().options;
+	private static final Options settings = mc.options;
     private static final KeyMapping keyBindEnable = new KeyMapping("key.parcool.Enable", KeyConflictContext.UNIVERSAL, KeyModifier.CONTROL, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P, "key.categories.parcool");
 	private static final KeyMapping keyBindCrawl = new KeyMapping("key.parcool.Crawl", GLFW.GLFW_KEY_C, "key.categories.parcool");
 	private static final KeyMapping keyBindGrabWall = new KeyMapping("key.parcool.ClingToCliff", InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_RIGHT, "key.categories.parcool");
@@ -37,8 +37,9 @@ public class KeyBindings {
 		return settings.keySprint;
 	}
 
-	public static KeyMapping getKeyJump() {
-		return settings.keyJump;
+	public static Boolean getKeyJump() {
+		return mc.player != null
+			&& mc.player.input.jumping;
 	}
 
 	public static KeyMapping getKeySneak() {
