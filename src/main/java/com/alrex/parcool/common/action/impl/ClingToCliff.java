@@ -70,8 +70,9 @@ public class ClingToCliff extends Action {
 
 	private boolean isGrabbing() {
 		return KeyBindings.getKeyGrabWall().isDown()
-			|| KeyBindings.getKeyReleaseWall().isUnbound()
-			|| !KeyBindings.getKeyReleaseWall().isDown();
+			|| (!KeyBindings.getKeyReleaseWall().isUnbound()
+			 && !KeyBindings.getKeyReleaseWall().isDown()
+			);
 	}
 
     @Override
